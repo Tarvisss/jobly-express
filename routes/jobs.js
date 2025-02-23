@@ -5,9 +5,9 @@
 const jsonschema = require("jsonschema");
 const express = require("express");
 
-const { BadRequestError, NotFoundError } = require("../expressError");
-const { ensureLoggedIn, isAdmin, isUserOrAdmin } = require("../middleware/auth");
-const Company = require("../models/company");
+const { BadRequestError } = require("../expressError");
+const { ensureLoggedIn, isAdmin } = require("../middleware/auth");
+const Job = require("../models/job");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
@@ -24,7 +24,7 @@ const router = new express.Router();
  * Authorization required: login
  */
 
-router.post("/", ensureLoggedIn, isUserOrAdmin, async function (req, res, next) {
+router.post("/", ensureLoggedIn, isAdmin, async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, companyNewSchema);
     if (!validator.valid) {
@@ -32,8 +32,8 @@ router.post("/", ensureLoggedIn, isUserOrAdmin, async function (req, res, next) 
       throw new BadRequestError(errs);
     }
 
-    const company = await Company.create(req.body);
-    return res.status(201).json({ company });
+    const job = await Job.create(req.body);
+    return res.status(201).json({ job });
   } catch (err) {
     return next(err);
   }
@@ -54,12 +54,12 @@ router.get("/", async function (req, res, next) {
   try {
     const filters = req.query;
 
-    
-    let companies = await Company.findAll(filters);
-    if (Array.isArray(companies) && companies.length === 0) {
-      throw new NotFoundError("No company found with this handle");
-    }
-    return res.json({ companies });
+    // if (filters.minEmployees && filters.maxEmployees && filters.minEmployees > filters.maxEmployees) {
+    //   throw new BadRequestError("minEmployees cannot be greater than maxEmployees");
+    // }
+    const jobs = await Job.findAll(filters);
+
+    return res.json({ jobs });
   } catch (err) {
     return next(err);
   }
@@ -73,20 +73,17 @@ router.get("/", async function (req, res, next) {
  * Authorization required: none
  */
 
-router.get("/:handle", async function (req, res, next) {
+router.get("/:id", async function (req, res, next) {
   try {
-    const company = await Company.get(req.params.handle);
-    if (!company) {
-      throw new NotFoundError("No company found with this handle");
-    }
-    return res.json({ company });
+    const job = await Job.get(req.params.handle);
+    return res.json({ job });
   } catch (err) {
     return next(err);
   }
 });
 
 /** PATCH /[handle] { fld1, fld2, ... } => { company }
- * 
+ *
  * Patches company data.
  *
  * fields can be: { name, description, numEmployees, logo_url }
@@ -96,7 +93,7 @@ router.get("/:handle", async function (req, res, next) {
  * Authorization required: login
  */
 
-router.patch("/:handle", ensureLoggedIn, isUserOrAdmin, async function (req, res, next) {
+router.patch("/:id", ensureLoggedIn, isAdmin, async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, companyUpdateSchema);
     if (!validator.valid) {
@@ -104,8 +101,8 @@ router.patch("/:handle", ensureLoggedIn, isUserOrAdmin, async function (req, res
       throw new BadRequestError(errs);
     }
 
-    const company = await Company.update(req.params.handle, req.body);
-    return res.json({ company });
+    const job = await Job.update(req.params.id, req.body);
+    return res.json({ job });
   } catch (err) {
     return next(err);
   }
@@ -116,10 +113,10 @@ router.patch("/:handle", ensureLoggedIn, isUserOrAdmin, async function (req, res
  * Authorization: login
  */
 
-router.delete("/:handle", ensureLoggedIn, isUserOrAdmin, async function (req, res, next) {
+router.delete("/:id", ensureLoggedIn, isAdmin, async function (req, res, next) {
   try {
-    await Company.remove(req.params.handle);
-    return res.json({ deleted: req.params.handle });
+    await Job.remove(req.params.handle);
+    return res.json({ deleted: req.params.id });
   } catch (err) {
     return next(err);
   }

@@ -50,45 +50,59 @@ class Company {
    * */
 
   static async findAll(filters = {}) {
-    const {name, minEmployees, maxEmployees} = filters
-    // base query
-    let query =`SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies`;
-           //array to hold query parameters
+    const { description, name, minEmployees, maxEmployees } = filters;
+    
+    // Base query to select companies data
+    let query = `SELECT handle,
+                        name,
+                        description,
+                        num_employees AS "numEmployees",
+                        logo_url AS "logoUrl"
+                 FROM companies`;
+    
+    // Array to hold query parameters
     let queryParams = [];
+    
+    // Array to hold conditions for filtering
     let whereClauses = [];
-
-    if(name){
-      
-      whereClauses.push(`name ILIKE $${queryParams.length + 1}`);
-      queryParams.push(`%${name}%`);
-      
+    
+    // If description filter is provided, add a case-insensitive search for the description
+    if (description) {
+      whereClauses.push(`description ILIKE $${queryParams.length + 1}`);
+      queryParams.push(`%${description}%`);
     }
 
-    if (minEmployees){
+    // If name filter is provided, add a case-insensitive search for the name
+    if (name) {
+      whereClauses.push(`name ILIKE $${queryParams.length + 1}`);
+      queryParams.push(`%${name}%`);
+    }
+    
+    // If minEmployees filter is provided, add condition for companies with at least 'minEmployees' employees
+    if (minEmployees) {
       whereClauses.push(`num_employees >= $${queryParams.length + 1}`);
       queryParams.push(minEmployees);
     }
-
-    if (maxEmployees){
-      whereClauses.push(`num_employees <= $${queryParams.length +1}`);
+    
+    // If maxEmployees filter is provided, add condition for companies with no more than 'maxEmployees' employees
+    if (maxEmployees) {
+      whereClauses.push(`num_employees <= $${queryParams.length + 1}`);
       queryParams.push(maxEmployees);
     }
 
-    if (whereClauses.length > 0){
+    // If any filters are applied, add WHERE clause and join conditions with AND
+    if (whereClauses.length > 0) {
       query += " WHERE " + whereClauses.join(" AND ");
     }
 
+    // Order results by company name
     query += " ORDER BY name ";
 
+    // Execute the query and return the results
     const companiesRes = await db.query(query, queryParams);
     return companiesRes.rows;
+}
 
-  }
 
   /** Given a company handle, return data about company.
    *
@@ -105,12 +119,28 @@ class Company {
                   description,
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
-           FROM companies`,
+           FROM companies
+           WHERE handle =$1`,
         [handle]);
 
     const company = companyRes.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
+
+    const jobsForCompany = await db.query(
+            `SELECT id,
+                    title,
+                    salary,
+                    equity,
+                    company_handle AS "companyHandle"
+           FROM jobs
+           WHERE company_handle = $1`,
+        [handle]
+      );
+      
+      company.jobs = jobsForCompany.rows;
+
+   
 
     return company;
   }

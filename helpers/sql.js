@@ -9,13 +9,14 @@ const { BadRequestError } = require("../expressError");
  * 
  */
 
-function sqlForPartialUpdate(dataToUpdate, jsToSql) {
+function sqlForPartialUpdate(dataToUpdate, jsFieldToSqlColumnMap) {
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
 
   // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
   const cols = keys.map((colName, idx) =>
-      `"${jsToSql[colName] || colName}"=$${idx + 1}`,
+    // jsToSql[colName] checks if there is a mapping for the current key, if not then the column remains the same
+      `"${jsFieldToSqlColumnMap[colName] || colName}"=$${idx + 1}`,
   );
 
   return {

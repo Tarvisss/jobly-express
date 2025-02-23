@@ -28,6 +28,12 @@ class UnauthorizedError extends ExpressError {
   }
 }
 
+class AdminsOnly extends ExpressError {
+  constructor(message = "Admins only") {
+    super(message, 401);
+  }
+}
+
 /** 400 BAD REQUEST error. */
 
 class BadRequestError extends ExpressError {
@@ -50,4 +56,5 @@ module.exports = {
   UnauthorizedError,
   BadRequestError,
   ForbiddenError,
+  AdminsOnly
 };
