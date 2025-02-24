@@ -19,7 +19,7 @@ afterAll(commonAfterAll);
 
 describe("create", function () {
   let newJob = {
-    companyHandle: "c4",
+    companyHandle: "c1",
     title: "Test",
     salary: 100,
     equity: "0.1",

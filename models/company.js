@@ -129,19 +129,20 @@ class Company {
 
     const jobsForCompany = await db.query(
             `SELECT id,
+                    company_handle AS "companyHandle",
                     title,
                     salary,
-                    equity,
-                    company_handle AS "companyHandle"
+                    equity
            FROM jobs
-           WHERE company_handle = $1`,
+           WHERE company_handle = $1
+           ORDER BY id`,
         [handle]
       );
       
       company.jobs = jobsForCompany.rows;
 
    
-
+    
     return company;
   }
 

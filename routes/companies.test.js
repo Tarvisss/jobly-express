@@ -118,40 +118,54 @@ describe("GET /companies/:handle", function () {
         handle: "c1",
         name: "C1",
         description: "Desc1",
-        numEmployees: 1,
         logoUrl: "http://c1.img",
-        jobs: [{
-          title: "nothing",
-          salary: 10,
-          equity: "0.0001",
-          companyHandle: "c1",
-          id: expect.any(Number)
-        }]
-      },
-    });
+        numEmployees: 1,
+        jobs: [
+          { companyHandle: "c1", equity: "0.1", id: expect.any(Number), salary: 1, title: "J1" },
+          { companyHandle: "c1", equity: "0.2", id: expect.any(Number), salary: 2, title: "J2" },
+          { companyHandle: "c1", equity: null, id: expect.any(Number), salary: 3, title: "J3" }
+        ]
+      }
+    }
+    );
   });
 
-  test("works for anon: company w/o jobs", async function () {
-    const resp = await request(app).get(`/companies/c1`);
-    expect(resp.body).toEqual({
-      company: {
-        handle: "c1",
-        name: "C1",
-        description: "Desc1",
-        numEmployees: 1,
-        logoUrl: "http://c1.img",
-        jobs: [
-          {
-            companyHandle: "c1",
-            equity: "0.0001",
-            id: expect.any(Number),
-            salary: 10,
-            title: "nothing",
-          },
-        ],
-      },
-    });
+  test("works for anon: company with jobs", async function () {
+  const resp = await request(app).get(`/companies/c1`);
+  expect(resp.body).toEqual({
+    company: {
+      handle: "c1",
+      name: "C1",
+      description: "Desc1",
+      logoUrl: "http://c1.img",
+      numEmployees: 1,
+      jobs: [
+        {
+          companyHandle: "c1",
+          equity: "0.1",
+          id: expect.any(Number),
+          salary: 1,
+          title: "J1"
+        },
+        {
+          companyHandle: "c1",
+          equity: "0.2",
+          id: expect.any(Number),
+          salary: 2,
+          title: "J2"
+        },
+        {
+          companyHandle: "c1",
+          equity: null,
+          id: expect.any(Number),
+          salary: 3,
+          title: "J3"
+        }
+      ]
+    }
   });
+});
+
 
   test("not found for no such company", async function () {
     const resp = await request(app).get(`/companies/nope`);

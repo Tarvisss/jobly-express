@@ -16,29 +16,21 @@ class Job {
    * Throws BadRequestError if job already in database.
    * */
 
-  static async create({ title, salary, equity, company_handle }) {
-    const duplicateCheck = await db.query(
-          `SELECT title
-           FROM jobs
-           WHERE title = $1`,
-        [title]);
-
-    if (duplicateCheck.rows[0])
-      throw new BadRequestError(`Duplicate job: ${title}`);
+  static async create({ title, salary, equity, companyHandle }) {
 
     const result = await db.query(
           `INSERT INTO jobs
            (title, salary, equity, company_handle)
            VALUES ($1, $2, $3, $4)
-           RETURNING id, title, salary, equity, company_handle`,
+           RETURNING id, title, salary, equity, company_handle AS "companyHandle"`,
         [
           title,
           salary,
           equity,
-          company_handle,
+          companyHandle,
         ],
     );
-    const job = result.rows[0];
+    let job = result.rows[0];
     return job;
   }
 
@@ -48,7 +40,7 @@ class Job {
    * */
 
   static async findAll(filters = {}) {
-    const { title, minSalary, company_handle, equity} = filters;
+    const { title, minSalary, companyHandle, equity} = filters;
     
     // Base query to select job data
     let query = `SELECT j.id,
@@ -71,9 +63,9 @@ class Job {
       whereClauses.push(`title ILIKE $${queryParams.length + 1}`);
       queryParams.push(`%${title}%`);
     }
-    if (company_handle) {
+    if (companyHandle) {
         whereClauses.push(`company_handle ILIKE $${queryParams.length + 1}`);
-        queryParams.push(`%${company_handle}%`);
+        queryParams.push(`%${companyHandle}%`);
     }
     if (equity === true) {
       whereClauses.push(`equity > 0`);
