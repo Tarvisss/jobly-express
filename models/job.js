@@ -112,7 +112,8 @@ class Job {
     const foundJob = jobRes.rows[0];
   
     if (!foundJob) throw new NotFoundError(`No job: ${id}`);
-  
+
+  // Queries and adds the company associated with the job object
     const companiesRes = await db.query(
       `SELECT handle,
               name,
@@ -122,8 +123,9 @@ class Job {
        FROM companies
        WHERE handle = $1`, [foundJob.companyHandle]
     );
-  
+  // after the query delete the companyHandle. this cleans up the data returned in the found job object
     delete foundJob.companyHandle;
+  // create a new propery called company and set the value to the first row of the companiesRes query result.
     foundJob.company = companiesRes.rows[0];
   
     return foundJob;

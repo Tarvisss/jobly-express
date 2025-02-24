@@ -2,7 +2,7 @@ const { BadRequestError } = require("../expressError");
 
 /** Generates a SQL string for a partial update query with values
  * 
- * This function is used to generate the necessary parts of a SQL query for
+ * generate the necessary parts of a SQL query for
  * updating speific fields in a database table based on the provided data.
  * It constucts the SET clause of the query dynamically, binding values
  * to parameters for secure sql execution.

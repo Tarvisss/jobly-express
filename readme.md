@@ -9,3 +9,12 @@ To run this:
 To run the tests:
 
     jest -i
+
+## Added routes and Models:
+- Job:
+ - get, 
+## Updated and added comments: 
+- routes: Jobs, Companies
+- models: Jobs, Companies
+- middleware helper functions: sqlForPartialUpdate
+- auth middleware functions:  ensureLoggedIn, isAdmin, isUserOrAdmin
